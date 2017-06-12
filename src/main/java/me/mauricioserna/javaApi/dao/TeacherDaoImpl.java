@@ -1,15 +1,19 @@
 package me.mauricioserna.javaApi.dao;
 
 import javax.management.Query;
+import javax.transaction.Transactional;
 import java.util.Iterator;
 import java.util.List;
 import me.mauricioserna.javaApi.model.Teacher;
 import me.mauricioserna.javaApi.model.TeacherSocialMedia;
+import org.springframework.stereotype.Repository;
 
 /**
  * Created by mauricio on 11/06/17.
  */
 
+@Repository
+@Transactional
 public class TeacherDaoImpl extends AbstractSession implements TeacherDao {
 
     @Override

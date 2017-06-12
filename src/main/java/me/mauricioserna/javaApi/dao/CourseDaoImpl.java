@@ -1,12 +1,17 @@
 package me.mauricioserna.javaApi.dao;
 
 import me.mauricioserna.javaApi.model.Course;
+import org.springframework.stereotype.Repository;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 /**
  * Created by mauricio on 12/06/17.
  */
+
+@Repository
+@Transactional
 public class CourseDaoImpl extends AbstractSession implements CourseDao {
 
     @Override

@@ -2,13 +2,17 @@ package me.mauricioserna.javaApi.dao;
 
 import me.mauricioserna.javaApi.model.SocialMedia;
 import me.mauricioserna.javaApi.model.TeacherSocialMedia;
+import org.springframework.stereotype.Repository;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 /**
  * Created by mauricio on 12/06/17.
  */
 
+@Repository
+@Transactional
 public class SocialMediaDaoImpl extends AbstractSession implements SocialMediaDao {
     @Override
     public void saveSocialMedia(SocialMedia socialMedia) {
