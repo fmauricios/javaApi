@@ -21,36 +21,36 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public void saveCourse(Course course) {
-
+        _courseDao.saveCourse(course);
     }
 
     @Override
     public void deleteCourse(Long idCourse) {
-
+        _courseDao.deleteCourse(idCourse);
     }
 
     @Override
     public void updateCourse(Course course) {
-
+        _courseDao.updateCourse(course);
     }
 
     @Override
     public List findAllCourses() {
-        return null;
+        return _courseDao.findAllCourses();
     }
 
     @Override
     public Course findCourseById(Long idCourse) {
-        return null;
+        return _courseDao.findCourseById(idCourse);
     }
 
     @Override
     public Course findByName(String name) {
-        return null;
+        return _courseDao.findByName(name);
     }
 
     @Override
     public List<Course> findByIdTeacher(Long idTeacher) {
-        return null;
+        return _courseDao.findByIdTeacher(idTeacher);
     }
 }
