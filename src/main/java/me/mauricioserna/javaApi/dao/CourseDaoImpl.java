@@ -40,11 +40,14 @@ public class CourseDaoImpl extends AbstractSession implements CourseDao {
 
     @Override
     public Course findByName(String name) {
-        return null;
+        return (Course) getSession().createQuery("from Course where name = :name")
+                .setParameter("name", name).uniqueResult();
     }
 
     @Override
     public List<Course> findByIdTeacher(Long idTeacher) {
-        return null;
+        return (List<Course>) getSession()
+                .createQuery("from Course c join c.teacher t where t.idTeacher = :idTeacher")
+                .setParameter("idTeacher", idTeacher).list();
     }
 }
