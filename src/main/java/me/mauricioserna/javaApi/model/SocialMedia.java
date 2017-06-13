@@ -1,6 +1,8 @@
 package me.mauricioserna.javaApi.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.util.Set;
 
@@ -27,6 +29,7 @@ public class SocialMedia {
 
     @OneToMany
     @JoinColumn(name = "id_social_media")
+    @JsonIgnore
     private Set<TeacherSocialMedia> teacherSocialMedia;
 
     public SocialMedia() {
