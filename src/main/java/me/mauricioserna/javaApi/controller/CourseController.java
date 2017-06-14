@@ -30,18 +30,19 @@ public class CourseController {
      */
 
     @RequestMapping(value = "/courses", method = RequestMethod.GET, headers = "Accept=application/json")
-    public ResponseEntity<List<Course>> getCourses(@RequestParam(value = "name", required = false) String name) {
+    public ResponseEntity<List<Course>> getCourses(@RequestParam(value = "name", required = false) String name,
+                                                   @RequestParam(value = "id_teacher", required = false) Long id_teacher) {
         List<Course> courses = new ArrayList<>();
 
-        if (name == null) {
-            courses = _courseService.findAllCourses();
+        if (id_teacher != null) {
+            courses = _courseService.findByIdTeacher(id_teacher);
 
             if (courses.isEmpty()) {
                 return new ResponseEntity(HttpStatus.NO_CONTENT);
             }
+        }
 
-            return new ResponseEntity<List<Course>>(courses, HttpStatus.OK);
-        } else {
+        if (name != null) {
             Course course = _courseService.findByName(name);
 
             if (course == null) {
@@ -49,8 +50,17 @@ public class CourseController {
             }
 
             courses.add(course);
-            return new ResponseEntity<List<Course>>(courses, HttpStatus.OK);
         }
+
+        if (name == null && id_teacher == null) {
+            courses = _courseService.findAllCourses();
+
+            if (courses.isEmpty()) {
+                return new ResponseEntity(HttpStatus.NO_CONTENT);
+            }
+        }
+
+        return new ResponseEntity<List<Course>>(courses, HttpStatus.OK);
     }
 
     /**

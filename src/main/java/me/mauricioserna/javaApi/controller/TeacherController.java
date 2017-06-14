@@ -6,13 +6,21 @@ import me.mauricioserna.javaApi.util.CustomErrorType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 import sun.rmi.runtime.Log;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -134,7 +142,7 @@ public class TeacherController {
     public ResponseEntity<Teacher> deleteTeacher(@PathVariable("id") Long idTeacher) {
 
         if (idTeacher == null || idTeacher <= 0) {
-            return new ResponseEntity(new CustomErrorType("idTeacher is required"), HttpStatus.CONFLICT);
+            return new ResponseEntity(new CustomErrorType("idTeacher is required"), HttpStatus.NO_CONTENT);
         }
 
         Teacher teacher = _teacherService.findTeacherById(idTeacher);
@@ -146,5 +154,63 @@ public class TeacherController {
         _teacherService.deleteTeacher(idTeacher);
 
         return new ResponseEntity<Teacher>(HttpStatus.OK);
+    }
+
+    public static final String TEACHER_UPLOADED_FOLDER = "images/teachers/";
+
+    /**
+     * CREATE teacher image
+     */
+
+    @RequestMapping(value = "/teachers/image", method = RequestMethod.POST, headers = ("content-type=multipart/form-data"))
+    public ResponseEntity<byte[]> uploadTeacherImage(@RequestParam("id_teacher") Long id_teacher,
+                                                     @RequestParam("file") MultipartFile multipartFile,
+                                                     UriComponentsBuilder uriComponentsBuilder) {
+
+        if (id_teacher == null) {
+            return new ResponseEntity(new CustomErrorType("idTeacher is required"), HttpStatus.NO_CONTENT);
+        }
+
+        if (multipartFile.isEmpty()) {
+            return new ResponseEntity(new CustomErrorType("File is empty, please select a file to upload"), HttpStatus.NO_CONTENT);
+        }
+
+        Teacher teacher = _teacherService.findTeacherById(id_teacher);
+
+        if (teacher == null) {
+            return new ResponseEntity(new CustomErrorType("idTeacher does not exists"), HttpStatus.NOT_FOUND);
+        }
+
+        if (!teacher.getAvatar().isEmpty() || teacher.getAvatar() != null) {
+            String fileName = teacher.getAvatar();
+            Path path = Paths.get(fileName);
+            File file = path.toFile();
+
+            if (file.exists()) {
+                file.delete();
+            }
+        }
+
+        try {
+            Date date = new Date();
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyy-MM-dd-HH-mm-ss");
+            String dateName = dateFormat.format(date);
+            String fileName = String.valueOf(id_teacher) + "-pictureTeacher" + dateName + "." + multipartFile.getContentType().split("/")[1];
+
+            teacher.setAvatar(TEACHER_UPLOADED_FOLDER + fileName);
+
+            byte[] bytesImage = multipartFile.getBytes();
+            Path path = Paths.get(TEACHER_UPLOADED_FOLDER + fileName);
+            Files.write(path, bytesImage);
+
+            _teacherService.updateTeacher(teacher);
+
+            return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(bytesImage);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return new ResponseEntity(new CustomErrorType("Upload failed: " + multipartFile.getOriginalFilename()), HttpStatus.CONFLICT);
+        }
     }
 }
