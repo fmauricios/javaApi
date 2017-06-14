@@ -12,7 +12,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
-import sun.rmi.runtime.Log;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -212,5 +211,38 @@ public class TeacherController {
 
             return new ResponseEntity(new CustomErrorType("Upload failed: " + multipartFile.getOriginalFilename()), HttpStatus.CONFLICT);
         }
+    }
+
+    @RequestMapping(value = "/teachers/{id_teacher}/images/", method = RequestMethod.GET)
+    public ResponseEntity<byte[]> getTeacherImage(@PathVariable("id_teacher") Long id_teacher) {
+
+        if (id_teacher == null) {
+            return new ResponseEntity(new CustomErrorType("idTeacher is required"), HttpStatus.NO_CONTENT);
+        }
+
+        Teacher teacher = _teacherService.findTeacherById(id_teacher);
+
+        if (teacher == null) {
+            return new ResponseEntity(new CustomErrorType("Teacher does not exists"), HttpStatus.NOT_FOUND);
+        }
+
+        try {
+            String fileName = teacher.getAvatar();
+            Path path = Paths.get(fileName);
+            File file = path.toFile();
+
+            if (!file.exists()) {
+                return new ResponseEntity(new CustomErrorType("Image not found"), HttpStatus.NOT_FOUND);
+            }
+
+            byte[] image = Files.readAllBytes(path);
+            return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(image);
+
+        }catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity(new CustomErrorType("Error to show image "), HttpStatus.CONFLICT);
+
+        }
+
     }
 }
