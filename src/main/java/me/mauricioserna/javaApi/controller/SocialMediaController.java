@@ -6,12 +6,20 @@ import me.mauricioserna.javaApi.util.CustomErrorType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -145,4 +153,61 @@ public class SocialMediaController {
         return new ResponseEntity<SocialMedia>(HttpStatus.OK);
     }
 
+    public static final String SOCIAL_MEDIA_UPLOADED_FOLDER = "images/socialMedias/";
+
+    /**
+     * CREATE socialMedia image
+     */
+
+    @RequestMapping(value = "/socialMedias/images", method = RequestMethod.POST, headers = ("content-type=multipart/form-data"))
+    public ResponseEntity<byte[]> uploadSocialMediaIcon(@RequestParam("id_social_media") Long id_social_media,
+                                                         @RequestParam("file") MultipartFile multipartFile,
+                                                         UriComponentsBuilder uriComponentsBuilder) {
+
+        if (id_social_media == null) {
+            return new ResponseEntity(new CustomErrorType("idSocialMedia is required"), HttpStatus.NO_CONTENT);
+        }
+
+        if (multipartFile.isEmpty()) {
+            return new ResponseEntity(new CustomErrorType("File is empty, please select a file to upload"), HttpStatus.NO_CONTENT);
+        }
+
+        SocialMedia socialMedia = _socialMediaService.findSocialMediaById(id_social_media);
+
+        if (socialMedia == null) {
+            return new ResponseEntity(new CustomErrorType("idSocialMedia does not exists"), HttpStatus.NOT_FOUND);
+        }
+
+        if (!socialMedia.getIcon().isEmpty() || socialMedia.getIcon() != null) {
+            String fileName = socialMedia.getIcon();
+            Path path = Paths.get(fileName);
+            File file = path.toFile();
+
+            if (file.exists()) {
+                file.delete();
+            }
+        }
+
+        try {
+            Date date = new Date();
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyy-MM-dd-HH-mm-ss");
+            String dateName = dateFormat.format(date);
+            String fileName = String.valueOf(id_social_media) + "-pictureSocialMedia" + dateName + "." + multipartFile.getContentType().split("/")[1];
+
+            socialMedia.setIcon(SOCIAL_MEDIA_UPLOADED_FOLDER + fileName);
+
+            byte[] bytesImage = multipartFile.getBytes();
+            Path path = Paths.get(SOCIAL_MEDIA_UPLOADED_FOLDER + fileName);
+            Files.write(path, bytesImage);
+
+            _socialMediaService.updateSocialMedia(socialMedia);
+
+            return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(bytesImage);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return new ResponseEntity(new CustomErrorType("Upload failed: " + multipartFile.getOriginalFilename()), HttpStatus.CONFLICT);
+        }
+    }
 }

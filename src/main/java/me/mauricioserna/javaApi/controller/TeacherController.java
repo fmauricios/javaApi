@@ -162,7 +162,7 @@ public class TeacherController {
      * CREATE teacher image
      */
 
-    @RequestMapping(value = "/teachers/image", method = RequestMethod.POST, headers = ("content-type=multipart/form-data"))
+    @RequestMapping(value = "/teachers/images", method = RequestMethod.POST, headers = ("content-type=multipart/form-data"))
     public ResponseEntity<byte[]> uploadTeacherImage(@RequestParam("id_teacher") Long id_teacher,
                                                      @RequestParam("file") MultipartFile multipartFile,
                                                      UriComponentsBuilder uriComponentsBuilder) {
