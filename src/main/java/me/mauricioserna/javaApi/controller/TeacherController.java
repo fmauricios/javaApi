@@ -101,9 +101,9 @@ public class TeacherController {
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(
                 uriComponentsBuilder
-                .path("/v1/teachers/{id}")
-                .buildAndExpand(teacher1.getIdTeacher())
-                .toUri()
+                        .path("/v1/teachers/{id}")
+                        .buildAndExpand(teacher1.getIdTeacher())
+                        .toUri()
         );
 
         return new ResponseEntity<String>(headers, HttpStatus.CREATED);
@@ -213,6 +213,13 @@ public class TeacherController {
         }
     }
 
+    /**
+     * GET teacher avatar
+     *
+     * @param id_teacher
+     * @return
+     */
+
     @RequestMapping(value = "/teachers/{id_teacher}/images/", method = RequestMethod.GET)
     public ResponseEntity<byte[]> getTeacherImage(@PathVariable("id_teacher") Long id_teacher) {
 
@@ -238,11 +245,45 @@ public class TeacherController {
             byte[] image = Files.readAllBytes(path);
             return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(image);
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity(new CustomErrorType("Error to show image "), HttpStatus.CONFLICT);
 
         }
+    }
 
+    /**
+     * DELETE
+     */
+
+    @RequestMapping(value = "/teachers/{id_teacher}/images/", method = RequestMethod.DELETE, headers = "Accept=application/json")
+    public ResponseEntity<?> deleteTeacherImage(@PathVariable("id_teacher") Long id_teacher) {
+
+        if (id_teacher == null) {
+            return new ResponseEntity(new CustomErrorType("Teacher does not exists"), HttpStatus.NOT_FOUND);
+        }
+
+        Teacher teacher = _teacherService.findTeacherById(id_teacher);
+
+        if (teacher == null) {
+            return new ResponseEntity(new CustomErrorType("Teacher does not exists"), HttpStatus.NOT_FOUND);
+        }
+
+        if (teacher.getAvatar().isEmpty() || teacher.getAvatar() == null) {
+            return new ResponseEntity(new CustomErrorType("Teacher doesn't have image assigned"), HttpStatus.NO_CONTENT);
+        }
+
+        String fileName = teacher.getAvatar();
+        Path path = Paths.get(fileName);
+        File file = path.toFile();
+
+        if (file.exists()) {
+            file.delete();
+        }
+
+        teacher.setAvatar("");
+        _teacherService.updateTeacher(teacher);
+
+        return new ResponseEntity<Teacher>(HttpStatus.NO_CONTENT);
     }
 }
