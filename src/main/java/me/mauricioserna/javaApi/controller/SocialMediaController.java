@@ -30,15 +30,27 @@ public class SocialMediaController {
      */
 
     @RequestMapping(value = "/socialMedias", method = RequestMethod.GET, headers = "Accept=application/json")
-    public ResponseEntity<List<SocialMedia>> getSocialMedias() {
+    public ResponseEntity<List<SocialMedia>> getSocialMedias(@RequestParam(value = "name", required = false) String name) {
         List<SocialMedia> socialMedias = new ArrayList<>();
-        socialMedias = _socialMediaService.findAllSocialMedias();
 
-        if (socialMedias.isEmpty()) {
-            return new ResponseEntity(HttpStatus.NO_CONTENT);
+        if (name == null) {
+            socialMedias = _socialMediaService.findAllSocialMedias();
+
+            if (socialMedias.isEmpty()) {
+                return new ResponseEntity(HttpStatus.NO_CONTENT);
+            }
+
+            return new ResponseEntity<List<SocialMedia>>(socialMedias, HttpStatus.OK);
+        } else {
+            SocialMedia socialMedia = _socialMediaService.findByName(name);
+
+            if (socialMedia == null) {
+                return new ResponseEntity(HttpStatus.NOT_FOUND);
+            }
+
+            socialMedias.add(socialMedia);
+            return new ResponseEntity<List<SocialMedia>>(socialMedias, HttpStatus.OK);
         }
-
-        return new ResponseEntity<List<SocialMedia>>(socialMedias, HttpStatus.OK);
     }
 
     /**
@@ -81,9 +93,9 @@ public class SocialMediaController {
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(
                 uriComponentsBuilder
-                        .path("/v1/socialMedias/{id}")
-                        .buildAndExpand(socialMedia1.getIdSocialMedia())
-                        .toUri()
+                .path("/v1/socialMedias/{id}")
+                .buildAndExpand(socialMedia1.getIdSocialMedia())
+                .toUri()
         );
 
         return new ResponseEntity<String>(headers, HttpStatus.CREATED);

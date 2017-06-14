@@ -1,4 +1,6 @@
 package me.mauricioserna.javaApi.model;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Set;
@@ -23,10 +25,12 @@ public class Teacher implements Serializable {
     private String avatar;
 
     @OneToMany(mappedBy = "teacher")
+    @JsonIgnore
     private Set<Course> courses;
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "id_teacher")
+    @JsonIgnore
     private Set<TeacherSocialMedia> teacherSocialMedias;
 
     public Teacher() {
